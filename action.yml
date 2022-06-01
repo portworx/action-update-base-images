@@ -9,7 +9,7 @@ inputs:
     description: 'Version of the new base images as short sha.'
     required: true
   image-repo:
-    description: 'Type of the base image: base/base-config/jdk/jemalloc'
+    description: 'Type of the base image: pds-base/pds-base-config/pds-jdk/pds-jemalloc'
     required: true
   filename:
     description: 'The name of buildah file to look for.'
@@ -58,6 +58,6 @@ runs:
     uses: EndBug/add-and-commit@v7
     with:
       message: |
-        Update base images from `${{ steps.current-version.outputs.version }}` to `${{ inputs.to-version }}`
+        Update `${{ inputs.image-repo }}` from `${{ steps.current-version.outputs.version }}` to `${{ inputs.to-version }}`
       branch: ${{ inputs.branch }}
       default_author: github_actions
