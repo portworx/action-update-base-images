@@ -18,8 +18,8 @@ inputs:
 
 outputs:
   old-version:
-    description: 'The old base image version.'
-    value: ${{ steps.current-version.outputs.version }}
+    description: 'The old base image versions.'
+    value: ${{ steps.current-version.outputs.versions }}
 
 runs:
   using: "composite"
@@ -33,31 +33,41 @@ runs:
     shell: bash
     id: current-version
     run: |
-      # Find a current version hash in any buildah.sh file 
+      # Find current version hashes in any buildah.sh file:
       BUILDAH_FILE=$(find . -name ${{ inputs.filename }})
       for file in "${BUILDAH_FILE[@]}"
       do
         VERSION=$(cat $file | grep -Po '(?<=from_image="docker\.io\/portworx\/${{ inputs.image-repo }}:).*[0-9a-f]{7}' | grep -Po "[0-9a-f]{7}")
-        if [ -n VERSION ]
+        if [ -n $VERSION ]
         then
-            echo "::set-output name=version::${VERSION}"
-            break
+          if [[ $VERSIONS != *"$VERSION"* ]]; then
+            VERSIONS="$VERSIONS $VERSION"
+          fi
         fi
       done
+      echo "::set-output name=versions::${VERSIONS}"
 
   - name: Find and Replace
     id: replace
-    uses: jacobtomlinson/gha-find-replace@v2
-    with:
-      find: ${{ steps.current-version.outputs.version }}
-      replace: ${{ inputs.to-version }}
-      include: "**${{ inputs.filename }}"
+    run: |
+      REPLACE=${{ inputs.to-version }}
+      # Convert versions string to array.
+      VERSIONS=("${{ steps.current-version.outputs.versions }}")
+      BUILDAH_FILE=$(find . -name ${{ inputs.filename }})
+      # Replace current versions with the new one for each file.
+      for file in "${BUILDAH_FILE[@]}"
+      do
+        for current_version in $VERSIONS
+        do
+          sed -i "s/$current_version/$REPLACE/g" $file
+        done
+      done
 
   - name: Commit and Push
     if: ${{ steps.replace.outputs.modifiedFiles > 0 }}
     uses: EndBug/add-and-commit@v7
     with:
       message: |
-        Update `${{ inputs.image-repo }}` from `${{ steps.current-version.outputs.version }}` to `${{ inputs.to-version }}`
+        Update `${{ inputs.image-repo }}` from `${{ steps.current-version.outputs.versions }}` to `${{ inputs.to-version }}`
       branch: ${{ inputs.branch }}
       default_author: github_actions
