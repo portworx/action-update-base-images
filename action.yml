@@ -78,7 +78,7 @@ runs:
         do
           sed -i "s/$current_version/$REPLACE/gw /tmp/changes" $file
           if [ -s /tmp/changes ]; then
-            ((modifiedFiles++))
+            modifiedFiles=$((modifiedFiles+1))
           fi
         done
       done
