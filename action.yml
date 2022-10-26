@@ -53,6 +53,8 @@ runs:
           fi
         fi
       done
+      # Trim spaces.
+      VERSIONS=$(echo $VERSIONS | xargs)
       echo "::set-output name=versions::${VERSIONS}"
 
   - name: Find and Replace
