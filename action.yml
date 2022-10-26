@@ -15,6 +15,10 @@ inputs:
     description: 'The name of buildah file to look for.'
     required: false
     default: "buildah.sh"
+  filenameRegex:
+    description: 'The name of buildah file(s) to look for. If this argument is set then it overrides the "filename" input.'
+    required: false
+    default: ""
 
 outputs:
   old-version:
@@ -34,8 +38,12 @@ runs:
     id: current-version
     run: |
       # Find current version hashes in any buildah.sh file:
-      BUILDAH_FILE=$(find . -name ${{ inputs.filename }})
-      for file in "${BUILDAH_FILE[@]}"
+      if [ -n "${{ inputs.filenameRegex }})" ]; then 
+        BUILDAH_FILES=$(find . -regex '${{ inputs.filenameRegex }}')
+      else
+        BUILDAH_FILES=$(find . -name '${{ inputs.filename }}')
+      fi
+      for file in $BUILDAH_FILES
       do
         VERSION=$(cat $file | grep -Po '(?<=from_image="docker\.io\/portworx\/${{ inputs.image-repo }}:).*[0-9a-f]{7}' | grep -Po "[0-9a-f]{7}")
         if [ -n $VERSION ]
@@ -49,13 +57,19 @@ runs:
 
   - name: Find and Replace
     id: replace
+    shell: bash
     run: |
       REPLACE=${{ inputs.to-version }}
       # Convert versions string to array.
       VERSIONS=("${{ steps.current-version.outputs.versions }}")
-      BUILDAH_FILE=$(find . -name ${{ inputs.filename }})
+      if [ -n "${{ inputs.filenameRegex }})" ]; then 
+        BUILDAH_FILES=$(find . -regex '${{ inputs.filenameRegex }}')
+      else
+        BUILDAH_FILES=$(find . -name '${{ inputs.filename }}')
+      fi
+
       # Replace current versions with the new one for each file.
-      for file in "${BUILDAH_FILE[@]}"
+      for file in $BUILDAH_FILES
       do
         for current_version in $VERSIONS
         do
