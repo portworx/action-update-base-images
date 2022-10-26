@@ -71,21 +71,15 @@ runs:
       fi
 
       # Replace current versions with the new one for each file.
-      modifiedFiles=0
       for file in $BUILDAH_FILES
       do
         for current_version in $VERSIONS
         do
-          sed -i "s/$current_version/$REPLACE/gw /tmp/changes" $file
-          if [ -s /tmp/changes ]; then
-            modifiedFiles=$((modifiedFiles+1))
-          fi
+          sed -i "s/$current_version/$REPLACE/g" $file
         done
       done
-      echo "modifiedFiles=$modifiedFiles" >> $GITHUB_OUTPUT
 
   - name: Commit and Push
-    if: ${{ steps.replace.outputs.modifiedFiles > 0 }}
     uses: EndBug/add-and-commit@v7
     with:
       message: |
