@@ -80,7 +80,6 @@ runs:
       done
 
   - name: Commit and Push
-    if: ${{ steps.replace.outputs.modifiedFiles > 0 }}
     uses: EndBug/add-and-commit@v7
     with:
       message: |
