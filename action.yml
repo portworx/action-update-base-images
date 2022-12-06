@@ -38,7 +38,7 @@ runs:
     id: current-version
     run: |
       # Find current version hashes in any buildah.sh file:
-      if [ -n "${{ inputs.filenameRegex }})" ]; then 
+      if [ -n "${{ inputs.filenameRegex }}" ]; then 
         BUILDAH_FILES=$(find . -regex '${{ inputs.filenameRegex }}')
       else
         BUILDAH_FILES=$(find . -name '${{ inputs.filename }}')
