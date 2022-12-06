@@ -64,7 +64,7 @@ runs:
       REPLACE=${{ inputs.to-version }}
       # Convert versions string to array.
       VERSIONS=("${{ steps.current-version.outputs.versions }}")
-      if [ -n "${{ inputs.filenameRegex }})" ]; then 
+      if [ -n "${{ inputs.filenameRegex }}" ]; then 
         BUILDAH_FILES=$(find . -regex '${{ inputs.filenameRegex }}')
       else
         BUILDAH_FILES=$(find . -name '${{ inputs.filename }}')
